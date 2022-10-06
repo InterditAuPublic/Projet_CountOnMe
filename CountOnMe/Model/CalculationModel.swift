@@ -1,50 +1,123 @@
 import Foundation
 
+// Preparer les messages d'erreurs
+enum errorMessage: String {
+    case error
+}
+
 class CalculationModel {
 
-    var elements: [String] = [] //private ?
+    // MARK: Properties
+    var calculToDisplay: ((String) -> Void)?
+    
+    private var elements: [String] {
+        return calculString.split(separator: " ").map { "\($0)" }
+    }
+    
+    var calculString: String = "" {
+        didSet {
+            calculToDisplay?(calculString)
+        }
+    }
 
+    //Check if Expression is valid
     var expressionIsCorrect: Bool {
         return elements.last != "+" && elements.last != "-" && elements.last != "x" && elements.last != "÷" && !elements.isEmpty
     }
-    
+
     var expressionHaveEnoughElement: Bool {
         return elements.count >= 3
     }
-    
-    var canAddOperator: Bool {
-        return elements.last != "+" && elements.last != "-"
-    }
-    
+
     var expressionHaveResult: Bool {
         return elements.firstIndex(of: "=") != nil
     }
     
-    func setExpression(elements : String) {
-        if !elements.isEmpty {
-            self.elements = elements.split(separator: " ").map { "\($0)" }
-        }
+    var canAddOperator: Bool {
+        return elements.last != "+" && elements.last != "-" && elements.last != "x" && elements.last != "÷"
     }
-
-    private func calculationPriority() {
-        var index = 0
-        while index < elements.count {
-            if elements[index] == "x" || elements[index] == "÷" {
-//                let newNumber = calculate(left: Double(elements[index - 1])!, operand: elements[index], right: Double(elements[index + 1])!)
-//                elements[index - 1] = ("\(clearResult())")
-                elements.remove(at: index)
-                elements.remove(at: index)
-                index = 0
-            }
-            index += 1
+    
+    var divideByZero: Bool {
+        return elements.contains("÷ 0")
+    }
+    
+    // MARK: Functions
+    
+    func addOperator(with operatorSymbol: String) {
+        if expressionIsCorrect {
+            calculString.append(operatorSymbol)
+        } else {
+//            alertUser("Un operateur est déja mis !")
         }
     }
     
-//    private func calculate(left : Double, operand : String, right : Double) -> Double{
-//
-//    }
-//
-    func addition(a: Int, b: Int) -> Int {
-        return a + b
+    func addNumber(this number: String) {
+        if expressionHaveResult {
+            removeAll()
+            calculString.append(number)
+        } else {
+            calculString.append(number)
+        }
+        print(calculString)
+    }
+    
+    func removeOne() {
+//        guard textView.text.first != nil else {
+//            alertUser(message: "Il n'y a pas d'élement à effacer")
+//            return
+//        }
+//        guard !calculModel.expressionHaveResult else {
+//            textView.text.removeAll()
+//            return
+//        }
+//        var text = Array(textView.text)
+//        text.remove(at: textView.text.count - 1)
+//        textView.text = String(text)
+    }
+    
+    func removeAll() {
+        calculString.removeAll()
+        calculToDisplay?("0")
+    }
+    
+    func calcul(){
+        guard canBeComputed() else {
+            return
+        }
+    }
+    
+    private func canBeComputed() -> Bool {
+        guard expressionIsCorrect else {
+//            alertUser("Un operateur est déja mis !")
+            return false
+        }
+
+        guard expressionHaveEnoughElement else {
+//            alertUser("Démarrez un nouveau calcul !")
+            return false
+        }
+
+        guard !divideByZero else {
+//           alertUser("division par 0")
+            return false
+        }
+        return true
+    }
+    
+    private func calculationPriority() {
+        
+    }
+    
+    private func calculate(left: Double, right: Double, operand: String) -> Double {
+        let result: Double
+
+        switch operand {
+            case "+": result = left + right
+            case "-": result = left - right
+            case "÷": result = left / right
+            case "x": result = left * right
+            default: return 0.0
+        }
+        return result
     }
 }
