@@ -25,12 +25,24 @@ class CalculationModelTests: XCTestCase {
         }
     }
     
+    func test_soustraction() {
+        //given
+        let a : Double = 2
+        let b : Double = 3
+        let o = "-"
+        //when
+        let result = model.calculate(left: a, right: b, operand: o)
+        //then
+        XCTAssertEqual(a-b, result)
+    }
+    
     func test_addition() {
         //given
-        let a = 2
-        let b = 3
+        let a : Double = 2
+        let b : Double = 3
+        let o = "+"
         //when
-        let result = model.addition(a: a, b: b)
+        let result = model.calculate(left: a, right: b, operand: o)
         //then
         XCTAssertEqual(a+b, result)
     }

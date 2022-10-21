@@ -1,123 +1,118 @@
 import Foundation
 
-// Preparer les messages d'erreurs
-enum errorMessage: String {
+enum CustomError : Error {
     case error
+    case error2
+    
+    public var errorDescription: String {
+            switch self {
+            case .error:
+                return "I failed."
+            case .error2:
+                return "I failed again."
+            }
+        }
 }
 
 class CalculationModel {
 
     // MARK: Properties
-    var calculToDisplay: ((String) -> Void)?
-    
-    private var elements: [String] {
-        return calculString.split(separator: " ").map { "\($0)" }
-    }
-    
-    var calculString: String = "" {
-        didSet {
-            calculToDisplay?(calculString)
-        }
-    }
-
-    //Check if Expression is valid
-    var expressionIsCorrect: Bool {
-        return elements.last != "+" && elements.last != "-" && elements.last != "x" && elements.last != "÷" && !elements.isEmpty
-    }
-
-    var expressionHaveEnoughElement: Bool {
-        return elements.count >= 3
-    }
-
-    var expressionHaveResult: Bool {
-        return elements.firstIndex(of: "=") != nil
-    }
-    
-    var canAddOperator: Bool {
-        return elements.last != "+" && elements.last != "-" && elements.last != "x" && elements.last != "÷"
-    }
-    
-    var divideByZero: Bool {
-        return elements.contains("÷ 0")
-    }
+    let operators = ["+","-","÷","x"]
     
     // MARK: Functions
     
-    func addOperator(with operatorSymbol: String) {
-        if expressionIsCorrect {
-            calculString.append(operatorSymbol)
+    func canAddOperator(elements: [String]) -> Result<Void, CustomError>  {
+        guard elements != [] else {
+            return .failure(.error2)
+        }
+        if (!operators.contains(elements.last!)) {
+            return .success(())
         } else {
-//            alertUser("Un operateur est déja mis !")
+            return .failure(.error2)
         }
     }
-    
-    func addNumber(this number: String) {
-        if expressionHaveResult {
-            removeAll()
-            calculString.append(number)
-        } else {
-            calculString.append(number)
-        }
-        print(calculString)
+//    
+//    func canAddOperator(elements: [String]) -> Bool {
+//        return !operators.contains(elements.last!)
+//    }
+//    
+    //Same as the previous one ?
+    func expressionIsCorrect(elements: [String])  -> Bool {
+        return !operators.contains(elements.last!)
     }
-    
-    func removeOne() {
-//        guard textView.text.first != nil else {
-//            alertUser(message: "Il n'y a pas d'élement à effacer")
-//            return
-//        }
-//        guard !calculModel.expressionHaveResult else {
-//            textView.text.removeAll()
-//            return
-//        }
-//        var text = Array(textView.text)
-//        text.remove(at: textView.text.count - 1)
-//        textView.text = String(text)
-    }
-    
-    func removeAll() {
-        calculString.removeAll()
-        calculToDisplay?("0")
-    }
-    
-    func calcul(){
-        guard canBeComputed() else {
-            return
-        }
-    }
-    
-    private func canBeComputed() -> Bool {
-        guard expressionIsCorrect else {
-//            alertUser("Un operateur est déja mis !")
-            return false
-        }
 
-        guard expressionHaveEnoughElement else {
-//            alertUser("Démarrez un nouveau calcul !")
-            return false
-        }
-
-        guard !divideByZero else {
-//           alertUser("division par 0")
-            return false
-        }
-        return true
+    func expressionHaveEnoughElement(elements: [String]) -> Bool {
+        return elements.count >= 3
     }
-    
-    private func calculationPriority() {
+
+    func expressionHaveResult(elements: [String]) -> Bool {
+        return elements.contains("=")
+    }
+
+    func isDivideByZero(elements: [String]) -> Bool {
+//        print(elements)
+        if let index = elements.firstIndex(where: {$0 == "÷"}) {
+            if elements[index + 1] == "0" {
+                return true
+            }
+        }
+        return false
+    }
+
+    // transform to result func
+    func result(elements: [String]) -> String {
+
+        //Copy elements to reduce them step by step
+        var operationsToReduce = elements
+        //While operationToReduce contains operant
+        while operationsToReduce.count > 1 {
+
+            guard var left = Double(operationsToReduce[0]) else { return "" }
+            var operand = operationsToReduce[1]
+            guard var right = Double(operationsToReduce[2]) else { return "" }
+
+            let result: Double
+
+            //Set index to 1
+                var operandIndex = 1
+
+                if let index = operationsToReduce.firstIndex(where: { $0 == "x" || $0 == "÷" }) {
+                    operandIndex = index
+                    if let leftunwrapp = Double(operationsToReduce[index - 1]) { left = leftunwrapp }
+                    operand = operationsToReduce[index]
+                    if let rightUnwrapp = Double(operationsToReduce[index + 1]) { right = rightUnwrapp }
+                }
+            result = calculate(left: Double(left), right: Double(right), operand: operand)
+            
+                for _ in 1...3 {
+                    operationsToReduce.remove(at: operandIndex - 1)
+                }
+            operationsToReduce.insert(convertResult(result: Double(result)), at: operandIndex - 1 )
+
+        }
+            
+        guard let finalResult = operationsToReduce.first else { return "" }
+        return finalResult
+    }
+
+    func calculate(left: Double, right: Double, operand: String) -> Double {
         
-    }
-    
-    private func calculate(left: Double, right: Double, operand: String) -> Double {
         let result: Double
 
         switch operand {
             case "+": result = left + right
             case "-": result = left - right
-            case "÷": result = left / right
+            case "÷": result = left / right //Create divide func that verify divided by 0
             case "x": result = left * right
             default: return 0.0
         }
         return result
+    }
+    
+    private func convertResult(result: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.maximumFractionDigits = 3
+        guard let resultFormated = formatter.string(from: NSNumber(value: result)) else { return String() }
+        return resultFormated
     }
 }
