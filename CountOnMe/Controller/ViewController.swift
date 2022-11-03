@@ -38,32 +38,23 @@ class ViewController: UIViewController {
         textView.text.append(number)
     }
     
-//    @IBAction func tappedOperator(_ sender: UIButton) {
-//        guard let operatorSymbol = sender.titleLabel?.text else { return }
-//
-//        guard calculModel.canAddOperator(elements: elements) else {
-//            return
-//        }
-//        textView.text.append(operatorSymbol)
-//    }
-    
     @IBAction func tappedOperator(_ sender: UIButton) {
-           guard let operatorSymbol = sender.titleLabel?.text else { return }
-   
-           switch calculModel.canAddOperator(elements: elements) {
+        guard let operatorSymbol = sender.titleLabel?.text else { return }
+        switch calculModel.canAddOperator(elements: elements) {
            case .success():
                self.textView.text.append(operatorSymbol)
            case .failure(let errorType) :
-               return alertUser(message: errorType.errorDescription) 
-           }
-       }
+               return alertUser(message: errorType.errorDescription)
+        }
+    }
         
     @IBAction func tappedEqualButton(_ sender: UIButton) {
-        guard canProceed() else {
-            return
+        switch calculModel.result(elements: elements) {
+        case .success(let result):
+            self.textView.text.append(" = \(result)")
+        case .failure(let errorType) :
+            return alertUser(message: errorType.errorDescription)
         }
-        let result = calculModel.result(elements: elements)
-        textView.text.append(" = \(result)")
     }
     
     @IBAction func tappedDeleteButton(_ sender: UIButton) {
@@ -80,31 +71,10 @@ class ViewController: UIViewController {
     }
     
     @IBAction func tappedDots(_ sender: UIButton) {
-        guard let dots = sender.titleLabel?.text else {
+        guard (sender.titleLabel?.text) != nil else {
             return
         }
         textView.text.append(".")
-    }
-    private func canProceed() -> Bool {
-        guard !calculModel.expressionHaveResult(elements: elements) else {
-            alertUser(message: ErrorMessage.newCalcul.rawValue)
-            removeAll()
-            return false
-        }
-        guard calculModel.expressionHaveEnoughElement(elements: elements) else {
-            alertUser(message: ErrorMessage.numberIsRequired.rawValue)
-            return false
-        }
-        guard !calculModel.isDivideByZero(elements: elements) else {
-            alertUser(message: ErrorMessage.divisionByZero.rawValue)
-            removeAll()
-            return false
-        }
-        guard calculModel.expressionIsCorrect(elements: elements) else {
-            alertUser(message: ErrorMessage.newCalcul.rawValue)
-            return false
-        }
-        return true
     }
     
     func removeOne() {
