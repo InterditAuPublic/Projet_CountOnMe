@@ -26,11 +26,18 @@ class CalculationModelTests: XCTestCase {
     }
     
     func test_canAddOperator()  {
+//        let elements = ["12", "+", "8", "x"]
+        let elements = ["12", "+", "8"]
+        
+        let canAddOperator = model.canAddOperator(elements: elements)
        
     }
     
     func test_expressionIsCorrect()  {
+        let elements = ["12", "+", "8"]
         
+        let expression = model.expressionIsCorrect(elements: elements)
+        XCTAssertTrue(expression)
     }
 
     func test_expressionHaveEnoughElement() {

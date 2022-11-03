@@ -33,6 +33,7 @@ class CalculationModel {
     
     // MARK: Functions
     
+//  Fonction that check if user can add an operator
     func canAddOperator(elements: [String]) -> Result<Void, CustomError>  {
         guard elements != [] else {
             return .failure(.error)
@@ -44,18 +45,22 @@ class CalculationModel {
         }
     }
 
+    // Check is elements doesn't finish with an operator
     func expressionIsCorrect(elements: [String])  -> Bool {
         return !operators.contains(elements.last!)
     }
 
+    // Check if [elements] contains more than 2 elements
     func expressionHaveEnoughElement(elements: [String]) -> Bool {
         return elements.count >= 3
     }
 
+    // Check if the calcul a previous result
     func expressionHaveResult(elements: [String]) -> Bool {
         return elements.contains("=")
     }
     
+    // Check if the calcul can be proceed
     func canProceed(elements: [String]) -> Result<Bool, CustomError> {
 
         guard !expressionHaveResult(elements: elements) else {
@@ -70,6 +75,7 @@ class CalculationModel {
         return .success(true)
     }
 
+//   Function that return result of the calcul
     func result(elements: [String]) -> Result<String, CustomError> {
 
         switch canProceed(elements: elements) {
@@ -148,8 +154,8 @@ class CalculationModel {
         }
     }
     
+//    convert result to string
     func convertResult(result: Double) -> String {
-
         let formatter = NumberFormatter()
         formatter.maximumFractionDigits = 3
         guard let resultFormated = formatter.string(from: NSNumber(value: result)) else { return String() }
