@@ -1,130 +1,265 @@
 import XCTest
 @testable import CountOnMe
 
-class CalculationModelTests: XCTestCase {
+class CountOnMeTests: XCTestCase {
 
     let model = CalculationModel()
     
-    override func setUp() {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
-
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
-
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-    }
-
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
-    }
-    
-    func test_canAddOperator()  {
-//        let elements = ["12", "+", "8", "x"]
+    func test_canAddOperator_success()  {
+        // Given
         let elements = ["12", "+", "8"]
-        
+        // When
         let canAddOperator = model.canAddOperator(elements: elements)
+        // Then
+        switch canAddOperator {
+        case .success() : XCTAssertTrue(true)
+        case .failure(_) : XCTFail("Erreur")
+        }
        
     }
     
-    func test_expressionIsCorrect()  {
+    func test_canAddOperator_fail()  {
+        // Given
+        let elements = ["12", "+", "8", "x"]
+        // When
+        let canAddOperator = model.canAddOperator(elements: elements)
+        // Then
+        switch canAddOperator {
+        case .failure(_) : XCTAssertTrue(true)
+        case .success() : XCTFail("Erreur")
+        }
+    }
+    
+    func test_expressionIsCorrect_true()  {
+        // Given
         let elements = ["12", "+", "8"]
-        
+        // When
         let expression = model.expressionIsCorrect(elements: elements)
+        // Then
         XCTAssertTrue(expression)
     }
 
-    func test_expressionHaveEnoughElement() {
-        
+    func test_expressionIsCorrect_false()  {
+        // Given
+        let elements = ["12", "+", "8","+"]
+        // When
+        let expression = model.expressionIsCorrect(elements: elements)
+        // Then
+        XCTAssertFalse(expression)
+    }
+    
+    func test_expressionHaveEnoughElement_true() {
+        // Given
+        let elements = ["12", "+", "8"]
+        // When
+        let expression = model.expressionHaveEnoughElement(elements: elements)
+        // Then
+        XCTAssertTrue(expression)
+    }
+    
+    func test_expressionHaveEnoughElement_false() {
+        // Given
+        let elements = ["12", "+"]
+        // When
+        let expression = model.expressionHaveEnoughElement(elements: elements)
+        // Then
+        XCTAssertFalse(expression)
     }
 
-    func test_expressionHaveResult() {
-        
+    func test_expressionHaveResult_true() {
+        // Given
+        let elements = ["12", "+", "8", "=", "20"]
+        // When
+        let expression = model.expressionHaveResult(elements: elements)
+        // Then
+        XCTAssertTrue(expression)
     }
     
-    func test_canProceed_false() {
+    func test_expressionHaveResult_false() {
+        // Given
+        let elements = ["12", "+", "8"]
+        // When
+        let expression = model.expressionHaveResult(elements: elements)
+        // Then
+        XCTAssertFalse(expression)
+    }
+    
+    func test_canProceed() {
+        // Given
+        let elements = ["12", "+", "8"]
+        // When
+        let canProceed = model.canProceed(elements: elements)
+        // Then
+        switch canProceed {
+            case .success(_) : XCTAssertTrue(true)
+            case .failure(_) : XCTFail(CustomError.newCalcul.errorDescription)
+        }
+    }
+    
+    func test_canProceed_incorrectExpression() {
+        // Given
         let elements = ["12", "+", "8", "x"]
-        
+        // When
         let canProceed = model.canProceed(elements: elements)
+        // Then
+        switch canProceed {
+            case .success(_) : XCTFail("Erreur, calcul done")
+            case .failure(_) : XCTAssertTrue(true)
+        }
     }
     
-    func test_canProceed_true() {
-        let elements = ["12", "+", "8", "x", "4"]
-        
+    func test_canProceed_notEnoughtElements() {
+        // Given
+        let elements = ["12"]
+        // When
         let canProceed = model.canProceed(elements: elements)
-        
+        // Then
+        switch canProceed {
+            case .success(_) : XCTFail("Erreur, calcul done")
+            case .failure(_) : XCTAssertTrue(true)
+        }
     }
     
-    func test_soustraction() {
-        //given
+    func test_canProceed_alreadyHaveResult() {
+        // Given
+        let elements = ["12", "+", "8", "="]
+        // When
+        let canProceed = model.canProceed(elements: elements)
+        // Then
+        switch canProceed {
+            case .success(_) : XCTFail("Erreur, calcul done")
+            case .failure(_) : XCTAssertTrue(true)
+        }
+    }
+    
+    func test_calculateSoustraction() {
+        // Given
         let a : Double = 2
         let b : Double = 3
         let o = "-"
-        //when
+        // When
         let results = model.calculate(left: a, right: b, operand: o)
-        //then
-//        XCTAssertEqual(a+b, results)
+        // Then
+        switch results {
+            case .success(let result) : XCTAssertEqual(a-b, result)
+            case .failure(_) : XCTFail("Erreur, calcul done")
+        }
     }
     
-    func test_addition() {
-        //given
+    func test_calculateAddition() {
+        // Given
         let a : Double = 2
         let b : Double = 3
         let o = "+"
-        //when
-        let result = model.calculate(left: a, right: b, operand: o)
-        //then
-//        XCTAssertEqual(a+b, result)
+        // When
+        let results = model.calculate(left: a, right: b, operand: o)
+        // Then
+        switch results {
+            case .success(let result) : XCTAssertEqual(a+b, result)
+            case .failure(_) : XCTFail("Erreur, calcul done")
+        }
     }
     
-    func test_multiplication() {
-        //given
+    func test_calculateMultiplication() {
+        // Given
         let a : Double = 2
         let b : Double = 3
         let o = "x"
-        //when
-        let result = model.calculate(left: a, right: b, operand: o)
-        //then
-        
+        // When
+        let results = model.calculate(left: a, right: b, operand: o)
+        // Then
+        switch results {
+            case .success(let result) : XCTAssertEqual(a*b, result)
+            case .failure(_) : XCTFail("Erreur, calcul done")
+        }
     }
     
-    func test_divide() {
-        //given
+    func test_calculateDivide() {
+        // Given
         let a : Double = 2
         let b : Double = 3
         let o = "÷"
-        //when
-        let result = model.calculate(left: a, right: b, operand: o)
-        //then
+        // When
+        let results = model.calculate(left: a, right: b, operand: o)
+        // Then
+        switch results {
+            case .success(let result) : XCTAssertEqual(a/b, result)
+            case .failure(_) : XCTFail("Erreur, calcul done")
+        }
     }
     
-    func test_divideByZero() {
-        //given
+    func test_calculateDivideByZero() {
+        // Given
         let a : Double = 2
         let b : Double = 0
         let o = "÷"
-        //when
-        let result = model.calculate(left: a, right: b, operand: o)
-        //then
+        // When
+        let results = model.calculate(left: a, right: b, operand: o)
+        // Then
+        switch results {
+            case .success(_) : XCTFail("Erreur, calcul done")
+            case .failure(_) : XCTAssertTrue(true)
+        }
     }
     
-    func test_result() {
-        let elements = ["12", "+", "8", "x", "4"]
+    func test_divide() {
+        // Given
+        let a : Double = 10
+        let b : Double = 2
+        // When
+        let results = model.divide(left: a, right: b)
+        // Then
+        switch results {
+            case .success(let result) : XCTAssertEqual(a/b, result)
+            case .failure(_) : XCTFail("Une erreur est survenue")
+        }
     }
     
-    func test_calculate() {
-        
+    func test_divideBy0() {
+        // Given
+        let a : Double = 10
+        let b : Double = 0
+        // When
+        let results = model.divide(left: a, right: b)
+        // Then
+        switch results {
+            case .success(_) : XCTFail("Erreur, calcul done")
+            case .failure(_) : XCTAssertTrue(true)
+        }
     }
     
-    func convertResult() {
+    func test_result_success() {
+        // Given
+        let elements = ["12", "+", "8", "x", "4", "-", "5"]
+        let result = "39"
+        // When
+        let results = model.result(elements: elements)
+        // Then
+        switch results {
+            case .success(let finalResult) : XCTAssertTrue(result == finalResult)
+            case .failure(_) : XCTFail("Erreur while computing")
+        }
+    }
+    
+    func test_convertResult() {
+        // Given
         let resultToConvert = 10.1111111
-        
+        let convertedResult = "10.111"
+        // When
         let result = model.convertResult(result: resultToConvert)
+        // Then
+        XCTAssertTrue(result == convertedResult)
+    }
+    
+    func test_result_failed_notEnoughtElements() {
+        // Given
+        let elements = ["12"]
+        // When
+        let results = model.result(elements: elements)
+        // Then
+        switch results {
+            case .success(_) : XCTFail("Error calcul done!")
+            case .failure(_) : XCTAssertTrue(true)
+        }
     }
 }
