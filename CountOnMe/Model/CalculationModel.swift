@@ -146,7 +146,7 @@ class CalculationModel {
         guard let left = left, let right = right else {
             return .failure(.error)
         }
-        if (right == 0.0 || left == 0.0) {
+        if (right == 0.0) {
             return .failure(CustomError.divideByZero)
         } else {
             let result: Double = left / right
