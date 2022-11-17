@@ -15,7 +15,6 @@ class CountOnMeTests: XCTestCase {
         case .success() : XCTAssertTrue(true)
         case .failure(_) : XCTFail("Erreur")
         }
-       
     }
     
     func test_canAddOperator_fail()  {
@@ -25,6 +24,31 @@ class CountOnMeTests: XCTestCase {
         let canAddOperator = model.canAddOperator(elements: elements)
         // Then
         switch canAddOperator {
+        case .failure(_) : XCTAssertTrue(true)
+        case .success() : XCTFail("Erreur")
+        }
+    }
+    
+    
+    func test_canAddDot_success()  {
+        // Given
+        let elements = ["12"]
+        // When
+        let canAddDot = model.canAddDots(elements: elements)
+        // Then
+        switch canAddDot {
+        case .success() : XCTAssertTrue(true)
+        case .failure(_) : XCTFail("Erreur")
+        }
+    }
+    
+    func test_canAddDot_fail()  {
+        // Given
+        let elements = ["12.0"]
+        // When
+        let canAddDot = model.canAddDots(elements: elements)
+        // Then
+        switch canAddDot {
         case .failure(_) : XCTAssertTrue(true)
         case .success() : XCTFail("Erreur")
         }
